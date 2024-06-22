@@ -1,13 +1,21 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import { checkValidData } from "../utils/validate";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { getAuth, updateProfile } from "firebase/auth";
+
 import { auth } from "../utils/firebase";
 
 const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const navigate = useNavigate();
 
+  const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
 
@@ -20,24 +28,61 @@ const Login = () => {
     if (message) return;
 
     if (!isSignInForm) {
-     
-      createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
+      createUserWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user;
-          console.log(user)
+
+          const auth = getAuth();
+          updateProfile(user, {
+            displayName: name.current.value,
+            photoURL: "https://example.com/jane-q-user/profile.jpg",
+          })
+            .then(() => {
+              navigate("/browse")
+              // Profile updated!
+              // ...
+            })
+            .catch((error) => {
+              setErrorMessage("user not valid")
+              // An error occurred
+              // ...
+            });
+          navigate("/browse");
+          console.log(user);
           // ...
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          console.log(errorCode+" " +errorMessage)
-          setErrorMessage(errorCode+" " +errorMessage);
+          console.log(errorCode + " " + errorMessage);
+          setErrorMessage(errorCode + " " + errorMessage);
           // ..
         });
+    } else {
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          navigate("/browse");
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMessage(errorCode + " " + errorMessage);
+          setIsSignInForm(false);
+        });
     }
-
-
   };
 
   //
@@ -57,6 +102,7 @@ const Login = () => {
         <h1 className="font-bold text-3xl py-4">Sign In</h1>
         {!isSignInForm && (
           <input
+           ref={name}
             type="text"
             placeholder="Full Name"
             className="rouded-lg p-4 my-4 w-full bg-gray-700"

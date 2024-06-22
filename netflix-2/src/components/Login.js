@@ -20,6 +20,7 @@ const Login = () => {
     if (message) return;
 
     if (!isSignInForm) {
+      //signup logic
      
       createUserWithEmailAndPassword(auth, email.current.value, password.current.value)
         .then((userCredential) => {
