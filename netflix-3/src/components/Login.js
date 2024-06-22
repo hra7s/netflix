@@ -1,6 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header";
+import { addUser } from "../utils/userSlice";
+import { useDispatch } from "react-redux";
 import { checkValidData } from "../utils/validate";
 import {
   createUserWithEmailAndPassword,
@@ -14,6 +16,7 @@ const Login = () => {
   const [isSignInForm, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   const navigate = useNavigate();
+  const dispatch= useDispatch();
 
   const name = useRef(null);
   const email = useRef(null);
@@ -40,10 +43,13 @@ const Login = () => {
           const auth = getAuth();
           updateProfile(user, {
             displayName: name.current.value,
-            photoURL: "https://example.com/jane-q-user/profile.jpg",
+            photoURL: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmuzp1nGJNdpu9uBTKMIciYJYfqyELSMwRhw&s",
           })
             .then(() => {
               navigate("/browse")
+              const {uid,displayName,email,photoURL} = user
+       
+              dispatch(addUser({uid:uid,displayName:displayName,email:email,photoURL:photoURL}))
               // Profile updated!
               // ...
             })
